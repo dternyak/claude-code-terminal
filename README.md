@@ -24,27 +24,26 @@ An embedded terminal plugin for Obsidian that integrates with [Claude Code](http
 
 ## Installation
 
-### From Source (Recommended)
+### From Community Plugins
 
-This plugin uses native modules that need to be compiled for your system's Electron version.
+1. Open Obsidian Settings > Community plugins
+2. Search for **"Claude Code Terminal"**
+3. Install and enable
+
+### From Source
+
+This plugin uses native modules that need to be compiled for your system.
 
 ```bash
-# Clone into your vault's plugins folder
 cd /path/to/your/vault/.obsidian/plugins
 git clone https://github.com/dternyak/claude-code-terminal.git
 cd claude-code-terminal
-
-# Install dependencies
 npm install
-
-# Rebuild node-pty for Obsidian's Electron version
 npm run rebuild:electron
-
-# Build the plugin
 npm run build
 ```
 
-Then restart Obsidian and enable "Claude Terminal" in Settings > Community plugins.
+Restart Obsidian and enable in Settings > Community plugins.
 
 ### Electron Version Note
 
@@ -62,9 +61,11 @@ npm run rebuild:electron -- -v YOUR_ELECTRON_VERSION
 
 ### Toggle Terminal
 
-- **Keyboard**: `Cmd+Shift+\`` (Mac) or `Ctrl+Shift+\`` (Windows/Linux)
-- **Ribbon**: Click the terminal icon in the left sidebar
-- **Command Palette**: "Toggle Claude Terminal (Floating)"
+**Easiest:** `Cmd+P` (Mac) or `Ctrl+P` (Windows/Linux) → type "Claude" → select command
+
+Or use:
+- **Hotkey**: `Cmd+Shift+\`` / `Ctrl+Shift+\``
+- **Ribbon**: Terminal icon in left sidebar
 
 ### Floating Window Controls
 
