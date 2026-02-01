@@ -8,7 +8,7 @@ An embedded terminal plugin for Obsidian that integrates with [Claude Code](http
 
 ## Features
 
-- **Floating Terminal**: Quick-access popup window (Cmd/Ctrl+Shift+`)
+- **Floating Terminal**: Quick-access popup window
 - **Sidebar Integration**: Dock to Obsidian's native right sidebar
 - **Auto-launch Claude**: Optionally start Claude Code automatically when terminal opens
 - **Theme Matching**: Terminal colors adapt to your Obsidian theme
@@ -64,7 +64,7 @@ npm run rebuild:electron -- -v YOUR_ELECTRON_VERSION
 **Easiest:** `Cmd+P` (Mac) or `Ctrl+P` (Windows/Linux) → type "Claude" → select command
 
 Or use:
-- **Hotkey**: `Cmd+Shift+\`` / `Ctrl+Shift+\``
+- **Hotkey**: <kbd>Cmd+Shift+`</kbd> (Mac) / <kbd>Ctrl+Shift+`</kbd> (Windows/Linux)
 - **Ribbon**: Terminal icon in left sidebar
 
 ### Floating Window Controls
