@@ -1,0 +1,10 @@
+{
+  "id": "claude-code-terminal",
+  "name": "Claude Code Terminal",
+  "version": "1.0.0",
+  "minAppVersion": "1.5.0",
+  "description": "Embedded terminal for Obsidian with Claude Code integration",
+  "author": "Daniel Ternyak",
+  "authorUrl": "https://github.com/dternyak",
+  "isDesktopOnly": true
+}

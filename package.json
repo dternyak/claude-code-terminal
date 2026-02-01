@@ -1,0 +1,24 @@
+{
+  "name": "claude-code-terminal",
+  "version": "1.0.0",
+  "description": "Obsidian plugin for embedded Claude terminal",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit && node esbuild.config.mjs production",
+    "rebuild:electron": "electron-rebuild -f -w node-pty -v 37.3.1"
+  },
+  "dependencies": {
+    "@xterm/xterm": "^5.5.0",
+    "@xterm/addon-fit": "^0.10.0"
+  },
+  "devDependencies": {
+    "node-pty": "^1.0.0",
+    "@electron/rebuild": "^3.6.0",
+    "@types/node": "^20.0.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.20.0",
+    "obsidian": "^1.5.0",
+    "typescript": "^5.0.0"
+  }
+}
