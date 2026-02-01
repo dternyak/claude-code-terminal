@@ -1,6 +1,9 @@
 # Claude Code Terminal
 
 An embedded terminal plugin for Obsidian that integrates with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), Anthropic's AI coding assistant.
+<img width="470" height="332" alt="Screenshot 2026-02-02 at 12 12 32 AM" src="https://github.com/user-attachments/assets/af19d945-8028-476d-bba8-9ace8b482ab9" />
+
+
 
 ![Obsidian](https://img.shields.io/badge/Obsidian-1.5.0+-purple)
 ![Platform](https://img.shields.io/badge/Platform-Desktop%20Only-blue)
