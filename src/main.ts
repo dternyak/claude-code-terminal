@@ -5,8 +5,8 @@ import type { IPty } from "node-pty";
 import * as path from "path";
 
 // Use window.require for native modules in Electron
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const electronRequire = (window as any).require as NodeRequire;
+// In Electron, window has a require property for Node.js modules
+const electronRequire = (window as unknown as { require: NodeJS.Require }).require;
 
 const VIEW_TYPE_CLAUDE_TERMINAL = "claude-terminal-view";
 
@@ -44,7 +44,7 @@ class ClaudeTerminalView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "Claude Terminal";
+    return "Claude terminal";
   }
 
   getIcon(): string {
@@ -335,7 +335,7 @@ export default class ClaudeTerminalPlugin extends Plugin {
     const header = this.floatingContainer.createDiv({ cls: "claude-terminal-header" });
 
     const headerLeft = header.createDiv({ cls: "claude-terminal-header-left" });
-    headerLeft.createSpan({ cls: "claude-terminal-title", text: "Claude Terminal" });
+    headerLeft.createSpan({ cls: "claude-terminal-title", text: "Claude terminal" });
 
     const headerRight = header.createDiv({ cls: "claude-terminal-header-right" });
 
