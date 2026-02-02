@@ -252,14 +252,14 @@ export default class ClaudeTerminalPlugin extends Plugin {
     this.registerView(VIEW_TYPE_CLAUDE_TERMINAL, (leaf) => new ClaudeTerminalView(leaf, this));
 
     // Add ribbon icon
-    this.addRibbonIcon("terminal", "Toggle Claude terminal", () => {
+    this.addRibbonIcon("terminal", "Toggle claude terminal", () => {
       this.toggleFloatingTerminal();
     });
 
     // Toggle floating terminal
     this.addCommand({
       id: "toggle-claude-terminal",
-      name: "Toggle Claude terminal (floating)",
+      name: "Toggle claude terminal (floating)",
       callback: () => {
         this.toggleFloatingTerminal();
       },
@@ -268,7 +268,7 @@ export default class ClaudeTerminalPlugin extends Plugin {
     // Open in right sidebar
     this.addCommand({
       id: "open-claude-terminal-sidebar",
-      name: "Open Claude terminal in right sidebar",
+      name: "Open claude terminal in right sidebar",
       callback: () => {
         void this.openInSidebar();
       },
@@ -642,7 +642,7 @@ class ClaudeTerminalSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Auto-launch Claude")
+      .setName("Auto-launch claude")
       .setDesc("Automatically run 'claude' command when terminal opens")
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.autoLaunchClaude).onChange(async (value) => {
