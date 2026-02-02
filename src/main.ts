@@ -1,8 +1,12 @@
-import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, ItemView, Menu } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, ItemView, Menu, FileSystemAdapter, setIcon } from "obsidian";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import type { IPty } from "node-pty";
 import * as path from "path";
+
+// Use window.require for native modules in Electron
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const electronRequire = (window as any).require as NodeRequire;
 
 const VIEW_TYPE_CLAUDE_TERMINAL = "claude-terminal-view";
 
@@ -47,7 +51,8 @@ class ClaudeTerminalView extends ItemView {
     return "terminal";
   }
 
-  async onOpen() {
+  async onOpen(): Promise<void> {
+    await super.onOpen();
     const container = this.containerEl.children[1];
     container.empty();
     container.addClass("claude-terminal-view-container");
@@ -82,7 +87,8 @@ class ClaudeTerminalView extends ItemView {
     this.ptyProcess?.write("clear\r");
   }
 
-  async onClose() {
+  async onClose(): Promise<void> {
+    await super.onClose();
     this.destroyTerminal();
   }
 
@@ -146,9 +152,9 @@ class ClaudeTerminalView extends ItemView {
   }
 
   private getPluginPath(): string {
-    const adapter = this.app.vault.adapter as any;
-    const basePath = adapter.basePath;
-    return path.join(basePath, ".obsidian", "plugins", "claude-terminal");
+    const adapter = this.app.vault.adapter as FileSystemAdapter;
+    const basePath = adapter.getBasePath();
+    return path.join(basePath, this.app.vault.configDir, "plugins", "claude-terminal");
   }
 
   private startPty() {
@@ -160,12 +166,12 @@ class ClaudeTerminalView extends ItemView {
 
       let nodePty;
       try {
-        nodePty = require(nodePtyPath);
-      } catch (e) {
-        nodePty = require("node-pty");
+        nodePty = electronRequire(nodePtyPath);
+      } catch {
+        nodePty = electronRequire("node-pty");
       }
 
-      const vaultPath = (this.app.vault.adapter as any).basePath;
+      const vaultPath = (this.app.vault.adapter as FileSystemAdapter).getBasePath();
 
       this.ptyProcess = nodePty.spawn(this.plugin.settings.shellPath, [], {
         name: "xterm-256color",
@@ -246,15 +252,14 @@ export default class ClaudeTerminalPlugin extends Plugin {
     this.registerView(VIEW_TYPE_CLAUDE_TERMINAL, (leaf) => new ClaudeTerminalView(leaf, this));
 
     // Add ribbon icon
-    this.addRibbonIcon("terminal", "Toggle Claude Terminal", () => {
+    this.addRibbonIcon("terminal", "Toggle Claude terminal", () => {
       this.toggleFloatingTerminal();
     });
 
     // Toggle floating terminal
     this.addCommand({
       id: "toggle-claude-terminal",
-      name: "Toggle Claude Terminal (Floating)",
-      hotkeys: [{ modifiers: ["Mod", "Shift"], key: "`" }],
+      name: "Toggle Claude terminal (floating)",
       callback: () => {
         this.toggleFloatingTerminal();
       },
@@ -263,9 +268,9 @@ export default class ClaudeTerminalPlugin extends Plugin {
     // Open in right sidebar
     this.addCommand({
       id: "open-claude-terminal-sidebar",
-      name: "Open Claude Terminal in Right Sidebar",
+      name: "Open Claude terminal in right sidebar",
       callback: () => {
-        this.openInSidebar();
+        void this.openInSidebar();
       },
     });
 
@@ -278,12 +283,11 @@ export default class ClaudeTerminalPlugin extends Plugin {
     });
   }
 
-  async onunload() {
+  onunload() {
     this.destroyFloatingTerminal();
     if (this.floatingContainer) {
       this.floatingContainer.remove();
     }
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_CLAUDE_TERMINAL);
   }
 
   async loadSettings() {
@@ -307,11 +311,11 @@ export default class ClaudeTerminalPlugin extends Plugin {
         type: VIEW_TYPE_CLAUDE_TERMINAL,
         active: true,
       });
-      this.app.workspace.revealLeaf(rightLeaf);
+      await this.app.workspace.revealLeaf(rightLeaf);
     }
   }
 
-  async undockToFloating() {
+  undockToFloating() {
     // Close sidebar view
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CLAUDE_TERMINAL);
 
@@ -337,25 +341,25 @@ export default class ClaudeTerminalPlugin extends Plugin {
 
     // Clear button
     const clearBtn = headerRight.createEl("button", { cls: "claude-terminal-btn clickable-icon", attr: { "aria-label": "Clear terminal" } });
-    clearBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12H3M12 3v18"/></svg>`;
+    setIcon(clearBtn, "plus");
     clearBtn.title = "Clear terminal";
     clearBtn.addEventListener("click", () => this.floatingPtyProcess?.write("clear\r"));
 
     // Dock to sidebar button
     const dockBtn = headerRight.createEl("button", { cls: "claude-terminal-btn clickable-icon", attr: { "aria-label": "Open in sidebar" } });
-    dockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+    setIcon(dockBtn, "layout-sidebar-right");
     dockBtn.title = "Open in right sidebar";
-    dockBtn.addEventListener("click", () => this.openInSidebar());
+    dockBtn.addEventListener("click", () => { void this.openInSidebar(); });
 
     // Minimize button
     const minBtn = headerRight.createEl("button", { cls: "claude-terminal-btn clickable-icon", attr: { "aria-label": "Hide" } });
-    minBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-    minBtn.title = "Hide terminal (Cmd+Shift+`)";
+    setIcon(minBtn, "minus");
+    minBtn.title = "Hide terminal";
     minBtn.addEventListener("click", () => this.hideFloatingTerminal());
 
     // Close button
     const closeBtn = headerRight.createEl("button", { cls: "claude-terminal-btn clickable-icon claude-terminal-btn-close", attr: { "aria-label": "Close" } });
-    closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+    setIcon(closeBtn, "x");
     closeBtn.title = "Close and terminate session";
     closeBtn.addEventListener("click", () => {
       this.hideFloatingTerminal();
@@ -363,7 +367,7 @@ export default class ClaudeTerminalPlugin extends Plugin {
     });
 
     // Content
-    const content = this.floatingContainer.createDiv({ cls: "claude-terminal-content" });
+    this.floatingContainer.createDiv({ cls: "claude-terminal-content" });
 
     // Resize handle
     const resizeHandle = this.floatingContainer.createDiv({ cls: "claude-terminal-resize" });
@@ -430,7 +434,7 @@ export default class ClaudeTerminalPlugin extends Plugin {
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
-      this.saveSettings();
+      void this.saveSettings();
     };
 
     handle.addEventListener("mousedown", (e: MouseEvent) => {
@@ -504,9 +508,9 @@ export default class ClaudeTerminalPlugin extends Plugin {
   }
 
   private getPluginPath(): string {
-    const adapter = this.app.vault.adapter as any;
-    const basePath = adapter.basePath;
-    return path.join(basePath, ".obsidian", "plugins", "claude-terminal");
+    const adapter = this.app.vault.adapter as FileSystemAdapter;
+    const basePath = adapter.getBasePath();
+    return path.join(basePath, this.app.vault.configDir, "plugins", "claude-terminal");
   }
 
   private startFloatingPty() {
@@ -518,12 +522,12 @@ export default class ClaudeTerminalPlugin extends Plugin {
 
       let nodePty;
       try {
-        nodePty = require(nodePtyPath);
-      } catch (e) {
-        nodePty = require("node-pty");
+        nodePty = electronRequire(nodePtyPath);
+      } catch {
+        nodePty = electronRequire("node-pty");
       }
 
-      const vaultPath = (this.app.vault.adapter as any).basePath;
+      const vaultPath = (this.app.vault.adapter as FileSystemAdapter).getBasePath();
 
       this.floatingPtyProcess = nodePty.spawn(this.settings.shellPath, [], {
         name: "xterm-256color",
